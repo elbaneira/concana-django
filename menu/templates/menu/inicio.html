@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConCaña - Menú Oficial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Encabezado Oficial -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Nombre con Bandera fija -->
+        <a class="navbar-brand fw-bold fs-3 d-flex align-items-center gap-2" href="#">
+            <img src="https://flagcdn.com/w40/cl.png" width="35" alt="Chile" class="rounded-1">
+            <span>ConCaña</span>
+        </a>
+        <!-- Eslogan con Bandera fija -->
+        <span class="navbar-text text-white fst-italic fw-semibold fs-5 d-flex align-items-center gap-2">
+            "Sin caña no hay patria"
+            <img src="https://flagcdn.com/w40/cl.png" width="28" alt="Chile" class="rounded-1">
+        </span>
+    </div>
+</nav>
+        </a>
+        <span class="navbar-text text-white fst-italic fw-semibold fs-5">
+            "Sin caña no hay patria" 🇨🇱
+        </span>
+    </div>
+</nav>
+            </span>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container my-5">
+        <div class="text-center mb-4">
+            <h1 class="display-5 fw-bold text-danger">Menú de Nuestro Puesto</h1>
+            <p class="lead text-muted">Encuentra los mejores antídotos y preparaciones para este 18' de septiembre</p>
+        </div>
+
+        <!-- Tarjetas de Productos -->
+        <div class="row g-4">
+            {% for prod in productos %}
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <span class="badge bg-warning text-dark mb-2">{{ prod.categoria.nombre }}</span>
+                        <h5 class="card-title fw-bold">{{ prod.nombre }}</h5>
+                        <p class="card-text text-secondary">{{ prod.descripcion }}</p>
+                    </div>
+                    <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center pb-3">
+                        <span class="fs-4 fw-bold text-success">${{ prod.precio }}</span>
+                        <button class="btn btn-outline-danger btn-sm">Pedir</button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="fs-5 text-muted">Aún no hay productos registrados. Agrégalos desde el panel de administración (`/admin`).</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>
