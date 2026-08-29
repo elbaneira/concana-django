@@ -1,10 +1,13 @@
 import json
+import qrcode
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Sum
 from .models import Categoria, Producto, Venta
+from django.http import HttpResponse
+from io import BytesIO
 
 def inicio(request):
     categorias = Categoria.objects.prefetch_related('productos').all()
@@ -148,10 +151,6 @@ def anular_venta(request, venta_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
             
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
-
-import qrcode
-from django.http import HttpResponse
-from io import BytesIO
 
 def generar_qr(request):
     # Enlace principal de tu app en Render
