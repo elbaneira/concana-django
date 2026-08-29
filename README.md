@@ -8,12 +8,25 @@ Autora: Elba Neira Arévalo
 
 ---
 
-## 🚀 Enlaces del Proyecto
+## 🚀 Enlaces Directos del Proyecto en Producción
 
-* **Sitio Web en Producción:** [https://concana-django.onrender.com/](https://concana-django.onrender.com/)
+* **Página Principal (Inicio):** [https://concana-django.onrender.com/](https://concana-django.onrender.com/)
+* **Módulo de Caja:** [https://concana-django.onrender.com/caja/](https://concana-django.onrender.com/caja/)
+* **Módulo de Cocina:** [https://concana-django.onrender.com/cocina/](https://concana-django.onrender.com/cocina/)
+* **Registro e Cierre de Ventas:** [https://concana-django.onrender.com/cierre/](https://concana-django.onrender.com/cierre/)
 * **Código QR Fijo de Acceso Rápido:** [https://concana-django.onrender.com/qr/](https://concana-django.onrender.com/qr/)
-* **Repositorio en GitHub:** [https://github.com/elbaneira/concana-django](https://github.com/elbaneira/concana-django)
 
+---
+
+## 📋 Módulos y Rutas Principales
+
+| Módulo / Ruta | Descripción |
+| :--- | :--- |
+| `/` | Catálogo y presentación web principal de Concana. |
+| `/caja/` | Panel de gestión y registro de ventas para el cajero. |
+| `/cocina/` | Vista de comanda y pedidos activos para el área de cocina. |
+| `/historial/` | Registro, reporte e historial detallado de ventas realizadas. |
+| `/qr/` | Generador dinámico del código QR de acceso rápido. |
 ---
 
 ## 🛠️ Tecnologías y Librerías Utilizadas
@@ -45,6 +58,7 @@ Si deseas clonar y ejecutar este proyecto de forma local en tu máquina:
    git clone [https://github.com/elbaneira/concana-django.git](https://github.com/elbaneira/concana-django.git)
    cd concana-django
 ---
+
 © 2026 Elba Neira Arévalo
 
 ---
