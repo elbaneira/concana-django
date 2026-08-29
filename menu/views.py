@@ -148,3 +148,28 @@ def anular_venta(request, venta_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
             
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+import qrcode
+from django.http import HttpResponse
+from io import BytesIO
+
+def generar_qr(request):
+    # Enlace principal de tu app en Render
+    url_app = "https://concana-django.onrender.com/"
+    
+    # Crear el objeto QR
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(url_app)
+    qr.make(fit=True)
+
+    # Convertir la imagen a formato PNG en memoria
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    
+    return HttpResponse(buffer.getvalue(), content_type="image/png")

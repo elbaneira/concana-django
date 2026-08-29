@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/marcar-entregado/<int:venta_id>/', views.marcar_entregado, name='marcar_entregado'),
     path('api/cierre-caja/', views.api_cierre_caja, name='api_cierre_caja'),
     path('api/anular-venta/<int:venta_id>/', views.anular_venta, name='anular_venta'),
+    path('qr/', views.generar_qr, name='generar_qr'),
 ]
