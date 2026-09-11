@@ -1,55 +1,63 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-class Categoria(models.Model):
-    nombre = models.CharField(max_length=50)
+CURSOS = [
+    ('2E', 'Segundo E'),
+    ('2F', 'Segundo F'),
+    ('2D', 'Segundo D'),
+]
 
-    def __str__(self):
-        return self.nombre
+PARRILLAS = [
+    ('P1', 'Parrilla 1'),
+    ('P2', 'Parrilla 2'),
+    ('P3', 'Parrilla 3'),
+    ('P4', 'Parrilla 4'),
+]
 
+TURNOS = [
+    ('T1', 'Turno 1 - Mañana'),
+    ('T2', 'Turno 2 - Tarde'),
+    ('T3', 'Turno 3 - Cierre'),
+]
 
-class Producto(models.Model):
-    ESTACIONES = [
-        ('Bar', 'Bar (Bebidas/Terremotos)'),
-        ('Cocina', 'Cocina (Empanadas/Papas)'),
-        ('Parrilla', 'Parrilla (Choripanes/Anticuchos)'),
-    ]
-
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, null=True)
-    precio = models.IntegerField()
-    disponible = models.BooleanField(default=True)
-    estacion = models.CharField(max_length=20, choices=ESTACIONES, default='Cocina')
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='productos')
-
-    def __str__(self):
-        return f"{self.nombre} [{self.estacion}] - ${self.precio}"
-
+MEDIOS_PAGO = [
+    ('EFECTIVO', 'Efectivo'),
+    ('TRANSFERENCIA', 'Transferencia'),
+]
 
 class Venta(models.Model):
-    METODOS_PAGO = [
-        ('Efectivo', 'Efectivo'),
-        ('Máquina', 'Máquina'),
-        ('Transferencia', 'Transferencia'),
-    ]
-
-    ESTADOS = [
-        ('Completada', 'Completada'),
-        ('Anulada', 'Anulada'),
-    ]
-
-    cliente = models.CharField(max_length=100, blank=True, null=True)
-    total = models.IntegerField()
-    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='Efectivo')
-    palabra_ticket = models.CharField(max_length=100)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='Completada')
+    cajero = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ventas')
+    curso_cajero = models.CharField(max_length=2, choices=CURSOS, verbose_name="Curso del Cajero")
+    parrilla = models.CharField(max_length=2, choices=PARRILLAS, default='P1', verbose_name="Parrilla Asignada")
+    turno = models.CharField(max_length=2, choices=TURNOS, verbose_name="Turno de Venta")
+    cantidad = models.PositiveIntegerField(default=1, verbose_name="Cantidad de Anticuchos")
+    total = models.PositiveIntegerField(default=0, verbose_name="Total a Pagar ($)")
+    cliente = models.CharField(max_length=100, default="Cliente", verbose_name="Nombre del Cliente")
     
-    # Estados de despacho independientes por área
-    bar_entregado = models.BooleanField(default=False)
-    cocina_entregado = models.BooleanField(default=False)
-    parrilla_entregado = models.BooleanField(default=False)
-
-    detalle_items = models.TextField(blank=True, null=True)
+    medio_pago = models.CharField(max_length=15, choices=MEDIOS_PAGO, default='EFECTIVO', verbose_name="Medio de Pago")
+    monto_recibido = models.PositiveIntegerField(default=0, verbose_name="Paga con ($)")
+    vuelto = models.PositiveIntegerField(default=0, verbose_name="Vuelto ($)")
+    
+    completado = models.BooleanField(default=False, verbose_name="¿Entregado en Parrilla?")
     fecha_hora = models.DateTimeField(auto_now_add=True)
 
+    def calcular_total(self):
+        combos_3 = self.cantidad // 3
+        sueltos = self.cantidad % 3
+        return (combos_3 * 10000) + (sueltos * 4000)
+
+    def save(self, *args, **kwargs):
+        self.total = self.calcular_total()
+        if self.medio_pago == 'EFECTIVO' and self.monto_recibido >= self.total:
+            self.vuelto = self.monto_recibido - self.total
+        else:
+            self.vuelto = 0
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Venta #{self.id} (${self.total})"
+        return f"Venta #{self.id} - {self.cantidad} Anticuchos - Total: ${self.total}"
+    
+# Dentro de menu/models.py, agrega este campo a la clase Venta:
+
+    
+    # ... (los demás campos se mantienen igual)

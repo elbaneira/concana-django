@@ -1,174 +1,93 @@
-import json
-import qrcode
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from django.db.models import Sum
-from .models import Categoria, Producto, Venta
-from django.http import HttpResponse
-from io import BytesIO
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Venta
 
+# Agregar esta vista para solucionar la ruta vacía
 def inicio(request):
-    categorias = Categoria.objects.prefetch_related('productos').all()
-    return render(request, 'menu/inicio.html', {'categorias': categorias})
+    return redirect('caja')
 
+@login_required
 def caja(request):
-    productos = Producto.objects.filter(disponible=True)
-    return render(request, 'menu/caja.html', {'productos': productos})
-
-def cocina(request):
-    return render(request, 'menu/cocina.html')
-
-def cierre_caja(request):
-    return render(request, 'menu/cierre_caja.html')
-
-@csrf_exempt
-def registrar_venta(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            nueva_venta = Venta.objects.create(
-                cliente=data.get('cliente', ''),
-                total=int(data.get('total', 0)),
-                metodo_pago=data.get('metodo_pago', 'Efectivo'),
-                palabra_ticket=data.get('palabra_ticket', 'Ticket'),
-                detalle_items=data.get('detalle_items', '')
-            )
-            return JsonResponse({'status': 'ok', 'venta_id': nueva_venta.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+        cliente = request.POST.get('cliente', 'Cliente')
+        curso_cajero = request.POST.get('curso_cajero')
+        parrilla = request.POST.get('parrilla')
+        turno = request.POST.get('turno')
+        cantidad = int(request.POST.get('cantidad', 1))
+        medio_pago = request.POST.get('medio_pago')
+        monto_recibido = int(request.POST.get('monto_recibido', 0))
 
-def pedidos_pendientes(request):
-    ventas = Venta.objects.filter(estado='Completada').order_by('fecha_hora')
-    datos = []
-    
-    productos_db = {p.nombre.lower(): p.estacion for p in Producto.objects.all()}
+        Venta.objects.create(
+            cliente=cliente,
+            cajero=request.user,
+            curso_cajero=curso_cajero,
+            parrilla=parrilla,
+            turno=turno,
+            cantidad=cantidad,
+            medio_pago=medio_pago,
+            monto_recibido=monto_recibido
+        )
+        return redirect('caja')
 
-    for v in ventas:
-        items_bar = []
-        items_cocina = []
-        items_parrilla = []
+   # Totales del equipo completo
+    ventas = Venta.objects.all()
+    pozo_comun = sum(v.total for v in ventas)
+    total_anticuchos = sum(v.cantidad for v in ventas)
+    ultimas_ventas = ventas.order_by('-fecha_hora')[:8]
 
-        if v.detalle_items:
-            lista_items = [i.strip() for i in v.detalle_items.split(',') if i.strip()]
-            for item in lista_items:
-                partes = item.split('x ', 1)
-                nombre_prod = partes[1].lower() if len(partes) > 1 else item.lower()
-                estacion_asignada = productos_db.get(nombre_prod, '')
-
-                if estacion_asignada == 'Bar' or any(w in nombre_prod for w in ['terremoto', 'bebida', 'jugo', 'cerveza', 'borgoña', 'pisco']):
-                    items_bar.append(item)
-                elif estacion_asignada == 'Parrilla' or any(w in nombre_prod for w in ['chorip', 'anticucho', 'asado', 'parri']):
-                    items_parrilla.append(item)
-                else:
-                    items_cocina.append(item)
-
-        # Solo incluir si no está todo listo en sus respectivas estaciones
-        todo_entregado = True
-        if items_bar and not v.bar_entregado:
-            todo_entregado = False
-        if items_cocina and not v.cocina_entregado:
-            todo_entregado = False
-        if items_parrilla and not v.parrilla_entregado:
-            todo_entregado = False
-
-        if not todo_entregado:
-            datos.append({
-                'id': v.id,
-                'cliente': v.cliente or 'Sin nombre',
-                'palabra_ticket': v.palabra_ticket,
-                'bar_items': items_bar,
-                'cocina_items': items_cocina,
-                'parrilla_items': items_parrilla,
-                'bar_entregado': v.bar_entregado,
-                'cocina_entregado': v.cocina_entregado,
-                'parrilla_entregado': v.parrilla_entregado,
-                'hora': v.fecha_hora.strftime('%H:%M')
-            })
-
-    return JsonResponse({'pedidos': datos})
-
-@csrf_exempt
-def marcar_entregado(request, venta_id):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body.decode('utf-8')) if request.body else {}
-            estacion = data.get('estacion', 'TODOS')
-            venta = Venta.objects.get(id=venta_id)
-
-            if estacion == 'BAR':
-                venta.bar_entregado = True
-            elif estacion == 'COCINA':
-                venta.cocina_entregado = True
-            elif estacion == 'PARRILLA':
-                venta.parrilla_entregado = True
-            else:
-                venta.bar_entregado = True
-                venta.cocina_entregado = True
-                venta.parrilla_entregado = True
-
-            venta.save()
-            return JsonResponse({'status': 'ok'})
-        except Venta.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Pedido no encontrado'}, status=404)
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
-
-def api_cierre_caja(request):
-    hoy = timezone.now().date()
-    ventas_hoy = Venta.objects.filter(fecha_hora__date=hoy, estado='Completada')
-
-    total_general = ventas_hoy.aggregate(Sum('total'))['total__sum'] or 0
-    total_efectivo = ventas_hoy.filter(metodo_pago='Efectivo').aggregate(Sum('total'))['total__sum'] or 0
-    total_maquina = ventas_hoy.filter(metodo_pago='Máquina').aggregate(Sum('total'))['total__sum'] or 0
-    total_transferencia = ventas_hoy.filter(metodo_pago='Transferencia').aggregate(Sum('total'))['total__sum'] or 0
-
-    return JsonResponse({
-        'fecha': hoy.strftime('%d/%m/%Y'),
-        'total_general': total_general,
-        'total_efectivo': total_efectivo,
-        'total_maquina': total_maquina,
-        'total_transferencia': total_transferencia,
-        'cantidad_ventas': ventas_hoy.count()
+    return render(request, 'menu/caja.html', {
+        'pozo_comun': pozo_comun,
+        'total_anticuchos': total_anticuchos,
+        'ultimas_ventas': ultimas_ventas
     })
-@csrf_exempt
-def anular_venta(request, venta_id):
-    if request.method == 'POST':
-        try:
-            venta = Venta.objects.get(id=venta_id)
-            
-            # Cambiamos el estado a Anulada para que no afecte el cierre ni salga en cocina
-            venta.estado = 'Anulada'
-            venta.save()
-            
-            return JsonResponse({'status': 'ok', 'message': f'Venta #{venta_id} anulada correctamente'})
-        except Venta.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'La venta no existe'}, status=404)
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-            
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
-def generar_qr(request):
-    # Enlace principal de tu app en Render
-    url_app = "https://concana-django.onrender.com/"
-    
-    # Crear el objeto QR
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(url_app)
-    qr.make(fit=True)
+@login_required
+def cocina(request):
+    pedidos_pendientes = Venta.objects.filter(completado=False).order_by('fecha_hora')
+    return render(request, 'menu/cocina.html', {'pedidos': pedidos_pendientes})
 
-    # Convertir la imagen a formato PNG en memoria
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    
-    return HttpResponse(buffer.getvalue(), content_type="image/png")
+@login_required
+def marcar_entregado(request, venta_id):
+    venta = get_object_or_404(Venta, id=venta_id)
+    venta.completado = True
+    venta.save()
+    return redirect('cocina')
+
+# Agrega o reemplaza la función cierre_caja en menu/views.py
+
+@login_required
+def cierre_caja(request):
+    ventas = Venta.objects.all()
+
+    # Totales generales
+    total_recaudado = sum(v.total for v in ventas)
+    total_anticuchos = sum(v.cantidad for v in ventas)
+
+    # Desglose por Medio de Pago
+    total_efectivo = sum(v.total for v in ventas if v.medio_pago == 'EFECTIVO')
+    total_transferencia = sum(v.total for v in ventas if v.medio_pago == 'TRANSFERENCIA')
+
+    # Desglose por Turnos
+    totales_turno = {
+        'T1': sum(v.total for v in ventas if v.turno == 'T1'),
+        'T2': sum(v.total for v in ventas if v.turno == 'T2'),
+        'T3': sum(v.total for v in ventas if v.turno == 'T3'),
+    }
+
+    # Desglose por Cursos (Para auditoría si fuere necesario)
+    totales_curso = {
+        '2E': sum(v.total for v in ventas if v.curso_cajero == '2E'),
+        '2F': sum(v.total for v in ventas if v.curso_cajero == '2F'),
+        '2D': sum(v.total for v in ventas if v.curso_cajero == '2D'),
+    }
+
+    return render(request, 'menu/cierre_caja.html', {
+        'total_recaudado': total_recaudado,
+        'total_anticuchos': total_anticuchos,
+        'total_efectivo': total_efectivo,
+        'total_transferencia': total_transferencia,
+        'totales_turno': totales_turno,
+        'totales_curso': totales_curso,
+        'ventas': ventas.order_by('-fecha_hora'),
+    })
+    return render(request, 'menu/cierre_caja.html', context)

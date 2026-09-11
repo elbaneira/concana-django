@@ -2,102 +2,156 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cierre de Caja - ConCaña</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cierre de Caja - Kermesse</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1615;
+            color: #f4e8c1;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .card-parrilla {
+            background-color: #2b2320;
+            border: 2px solid #8b2600;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .header-bbq {
+            background: linear-gradient(180deg, #d32f2f 0%, #8b2600 100%);
+            color: #ffffff;
+            padding: 14px;
+            border-radius: 14px 14px 0 0;
+            font-weight: bold;
+        }
+        .stat-box {
+            background-color: #12100f;
+            border: 1px solid #8b2600;
+            border-radius: 12px;
+            padding: 14px;
+        }
+    </style>
 </head>
-<body class="bg-light">
-
-    <nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
-        <div class="container-fluid">
-            <span class="navbar-brand fw-bold fs-3">💰 Resumen de Cierre de Caja</span>
-            <span id="fecha-actual" class="text-warning fw-bold fs-5"></span>
-        </div>
-    </nav>
-
-    <div class="container py-3">
+<body class="p-2 p-md-4">
+    <div class="container" style="max-width: 550px;">
         
-        <!-- Tarjeta Principal Total General -->
-        <div class="card bg-success text-white shadow mb-4 text-center">
-            <div class="card-body py-4">
-                <h4 class="card-title text-uppercase fw-bold">TOTAL RECAUDADO HOY</h4>
-                <h1 id="total-general" class="display-3 fw-bold my-2">$0</h1>
-                <p id="cant-ventas" class="mb-0 fs-5">0 ventas realizadas</p>
+        <!-- ENCABEZADO -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 text-warning fw-bold mb-0">📊 Cierre de Caja</h2>
+            <a href="{% url 'caja' %}" class="btn btn-sm btn-outline-warning">← Volver a Caja</a>
+        </div>
+
+        <!-- RECAUDACIÓN TOTAL -->
+        <div class="card card-parrilla mb-3 text-center">
+            <div class="header-bbq h5 mb-0">🥳 EL BOTÍN TIQUI TIQUI TI</div>
+            <div class="card-body p-3">
+                <small class="text-warning text-uppercase fw-bold">Gran Total Recaudado</small>
+                <div class="display-5 text-success fw-bold my-1">${{ total_recaudado|default:"0" }}</div>
+                <span class="badge bg-warning text-dark fs-6 mt-1">🍡 {{ total_anticuchos|default:"0" }} Anticuchos Vendidos</span>
             </div>
         </div>
 
-        <!-- Desglose por Medios de Pago -->
-        <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
-            
-            <div class="col">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="fs-1 mb-2">💵</div>
-                        <h5 class="card-title text-muted fw-bold">EFECTIVO</h5>
-                        <h2 id="total-efectivo" class="text-success fw-bold my-2">$0</h2>
-                        <small class="text-muted">Dinero físico a cuadrar en caja</small>
+        <!-- DESGLOSE MEDIOS DE PAGO -->
+        <div class="card card-parrilla mb-3">
+            <div class="header-bbq h6 mb-0 text-center">💵 DESGLOSE DE PAGO (CUADRE EN CAJA)</div>
+            <div class="card-body p-3">
+                <div class="row g-2 text-center">
+                    <div class="col-6">
+                        <div class="stat-box border-success">
+                            <span class="text-success fw-bold d-block mb-1">💵 EFECTIVO</span>
+                            <div class="h3 text-white fw-bold mb-0">${{ total_efectivo|default:"0" }}</div>
+                            <small class="text-muted">Dinero en Físico</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box border-info">
+                            <span class="text-info fw-bold d-block mb-1">📲 TRANSFERENCIA</span>
+                            <div class="h3 text-white fw-bold mb-0">${{ total_transferencia|default:"0" }}</div>
+                            <small class="text-muted">Comprobantes Banco</small>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="fs-1 mb-2">💳</div>
-                        <h5 class="card-title text-muted fw-bold">MÁQUINA / TARJETA</h5>
-                        <h2 id="total-maquina" class="text-primary fw-bold my-2">$0</h2>
-                        <small class="text-muted">Cobros voucher Transbank/Redelcom</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="fs-1 mb-2">📲</div>
-                        <h5 class="card-title text-muted fw-bold">TRANSFERENCIAS</h5>
-                        <h2 id="total-transferencia" class="text-info fw-bold my-2">$0</h2>
-                        <small class="text-muted">Transferencias a cuenta banco</small>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Información Adicional -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <span class="fw-bold text-muted">Ventas marcadas como Anuladas hoy:</span>
-                <span id="cant-anuladas" class="badge bg-danger fs-6">0</span>
             </div>
         </div>
 
-        <div class="text-center mt-4">
-            <button onclick="cargarCierre()" class="btn btn-outline-dark fw-bold px-4">🔄 Actualizar Datos</button>
+        <!-- RECAUDACIÓN POR TURNOS -->
+        <div class="card card-parrilla mb-3">
+            <div class="header-bbq h6 mb-0 text-center">🕒 TOTALES POR TURNO</div>
+            <div class="card-body p-3">
+                <div class="row text-center g-2">
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <small class="text-warning fw-bold d-block">Turno 1</small>
+                            <div class="fw-bold text-white fs-5 mt-1">${{ totales_turno.T1|default:"0" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <small class="text-warning fw-bold d-block">Turno 2</small>
+                            <div class="fw-bold text-white fs-5 mt-1">${{ totales_turno.T2|default:"0" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <small class="text-warning fw-bold d-block">Turno 3</small>
+                            <div class="fw-bold text-white fs-5 mt-1">${{ totales_turno.T3|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUDITORÍA DE TODAS LAS VENTAS -->
+        <div class="card card-parrilla">
+            <div class="header-bbq h6 mb-0 text-center">📋 AUDITORÍA DETALLADA DE VENTAS</div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                    <table class="table table-dark table-striped table-hover align-middle mb-0 text-center small">
+                        <thead class="sticky-top bg-dark">
+                            <tr class="text-warning border-bottom border-secondary">
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th>Curso</th>
+                                <th>Cant.</th>
+                                <th>Total</th>
+                                <th>Pago</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in ventas %}
+                            <tr>
+                                <td><strong>#{{ v.id }}</strong></td>
+                                <td class="text-start fw-bold text-truncate" style="max-width: 90px;">{{ v.cliente }}</td>
+                                <td><span class="badge bg-secondary">{{ v.curso_cajero }}</span></td>
+                                <td>{{ v.cantidad }}</td>
+                                <td class="text-success fw-bold">${{ v.total }}</td>
+                                <td>
+                                    {% if v.medio_pago == 'EFECTIVO' %}
+                                        <span class="badge bg-success">Efectivo</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark">Transf.</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="py-3 text-muted">No hay registros aún.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTÓN IMPRIMIR / REFRESCAR -->
+        <div class="mt-3 text-center">
+            <button onclick="window.print()" class="btn btn-outline-light w-100 py-2 fw-bold">
+                🖨️ IMPRIMIR / GUARDAR RESUMEN (PDF)
+            </button>
         </div>
 
     </div>
-
-    <script>
-        function formatoMoneda(valor) {
-            return '$' + new Intl.NumberFormat('es-CL').format(valor);
-        }
-
-        function cargarCierre() {
-            fetch('/api/cierre-caja/')
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('fecha-actual').innerText = data.fecha;
-                document.getElementById('total-general').innerText = formatoMoneda(data.total_general);
-                document.getElementById('total-efectivo').innerText = formatoMoneda(data.total_efectivo);
-                document.getElementById('total-maquina').innerText = formatoMoneda(data.total_maquina);
-                document.getElementById('total-transferencia').innerText = formatoMoneda(data.total_transferencia);
-                document.getElementById('cant-ventas').innerText = `${data.cantidad_ventas} ventas realizadas hoy`;
-                document.getElementById('cant-anuladas').innerText = data.cantidad_anuladas;
-            });
-        }
-
-        cargarCierre();
-    </script>
+    
 </body>
 </html>
