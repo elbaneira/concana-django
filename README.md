@@ -1,6 +1,6 @@
 # 🛒 Proyecto Concana - Aplicación Web en Django
 
-Aplicación web desarrollada con el framework **Django** para la gestión y presentación de servicios del emprendimiento **Concana**. El proyecto incluye integración con archivos estáticos, generación dinámica de códigos QR y despliegue continuo en la nube a través de Render.
+Aplicación web desarrollada con el framework **Django** para la gestión y presentación de servicios del emprendimiento **Concana**. El proyecto incluye integración con archivos estáticos, generación dinámica de códigos QR y despliegue continuo en la nube a través de pythonanywhere.com.
 
 ---
 
@@ -10,9 +10,14 @@ Autora: Elba Neira Arévalo
 
 ## 🚀 Enlaces Directos del Proyecto en Producción
 
-* **Página Principal (Inicio):** [https://terralfajor.pythonanywhere.com/](https://terralfajor.pythonanywhere.com/)
-* **Módulo de Caja:** 
-* **Módulo de Cocina:** 
+- **Sitio Web Principal:** [https://terralfajor.pythonanywhere.com/](https://terralfajor.pythonanywhere.com/)
+
+- **Punto de Venta (Caja):** [https://terralfajor.pythonanywhere.com/caja/](https://terralfajor.pythonanywhere.com/caja/)
+
+- **Panel de Cocina:** [https://terralfajor.pythonanywhere.com/cocina/](https://terralfajor.pythonanywhere.com/cocina/)
+
+- **Cierre de Caja:** [https://terralfajor.pythonanywhere.com/cierre/](https://terralfajor.pythonanywhere.com/cierre/)
+
 * **Registro e Cierre de Ventas:** 
 * **Código QR Fijo de Acceso Rápido:** 
 
@@ -44,8 +49,19 @@ Autora: Elba Neira Arévalo
 ## 📋 Funcionalidades Principales
 
 1. **Catálogo / Página Principal:** Presentación web de los productos y servicios de Concana.
-2. **Generador de QR Fijo (`/qr/`):** Genera dinámicamente un código QR en formato PNG que apunta a la URL principal de la app en Render, diseñado para su impresión y uso en carteles de acceso rápido.
-3. **Despliegue Automático:** Integrado con GitHub y Render mediante integración continua (CI/CD).
+
+2. **Despliegue Automático:** Integrado con GitHub y pytonanywhere mediante integración continua (CI/CD).
+
+---
+
+🔐 Credenciales de Prueba
+
+Para revisar el funcionamiento del sistema y las pruebas de acceso, se pueden utilizar los siguientes usuarios creados en la base de datos:
+
+| Usuario    |    Contraseña   | Rol |
+| :---       |     :---        | :--- |
+| `concana`  | `202609`        | Administrador (Django Admin) |
+| `usuario1` | `concana`       | Usuario Estándar |
 
 ---
 
