@@ -54,17 +54,6 @@ Autora: Elba Neira Arévalo
 
 ---
 
-🔐 Credenciales de Prueba
-
-Para revisar el funcionamiento del sistema y las pruebas de acceso, se pueden utilizar los siguientes usuarios creados en la base de datos:
-
-| Usuario    |    Contraseña   | Rol |
-| :---       |     :---        | :--- |
-| `concana`  | `202609`        | Administrador (Django Admin) |
-| `usuario1` | `concana`       | Usuario Estándar |
-
----
-
 ## 💻 Instrucciones para Ejecución Local
 
 Si deseas clonar y ejecutar este proyecto de forma local en tu máquina:
